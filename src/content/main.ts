@@ -132,7 +132,10 @@ function generateCSS(themeName: ThemeName): string {
 
     /* Header table should use pagetop background */
     #hnmain > tbody > tr:nth-child(2) > td,
-    #hnmain > tbody > tr:nth-child(2) td[bgcolor] {
+    #hnmain > tbody > tr:nth-child(2) td[bgcolor],
+    #hnmain > tbody > tr:nth-child(2) table,
+    #hnmain > tbody > tr:nth-child(2) table tr,
+    #hnmain > tbody > tr:nth-child(2) table td {
       background-color: var(--pagetop-background-color) !important;
     }
 
