@@ -117,8 +117,11 @@ function generateCSS(themeName: ThemeName): string {
       background-color: var(--table-background-color) !important;
     }
 
-    /* Remove striped backgrounds from story list */
-    .itemlist tr {
+    /* Remove all backgrounds from story list */
+    .itemlist tr,
+    .itemlist tr td,
+    .itemlist .spacer,
+    tr.spacer {
       background-color: transparent !important;
     }
 

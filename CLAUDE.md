@@ -159,3 +159,4 @@ Use `chrome.storage.local` for:
 - `noEmit: true` - Vite handles compilation, TypeScript only for checking
 
 The build process uses Vite's esbuild-based TypeScript compilation (faster than tsc).
+- always bump version for minor tweaks
