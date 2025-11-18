@@ -117,12 +117,9 @@ function generateCSS(themeName: ThemeName): string {
       background-color: var(--table-background-color) !important;
     }
 
-    .itemlist tr:nth-child(even) {
-      background-color: var(--itemlist-even-bg-color) !important;
-    }
-
-    .itemlist tr:nth-child(odd) {
-      background-color: var(--itemlist-odd-bg-color) !important;
+    /* Remove striped backgrounds from story list */
+    .itemlist tr {
+      background-color: transparent !important;
     }
 
     .c00, .c00 a {
