@@ -1,0 +1,2 @@
+- git commit changes when you finish a feature
+- before commit make sure it compiles without errors

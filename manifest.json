@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "HN Custom Skin",
+  "description": "Customize Hacker News look and feel",
+  "version": "0.0.1",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://news.ycombinator.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://news.ycombinator.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_page": "options.html"
+}

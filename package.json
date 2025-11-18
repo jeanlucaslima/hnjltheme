@@ -1,0 +1,18 @@
+{
+  "name": "hnjltheme",
+  "version": "0.0.1",
+  "description": "Hacker News custom skin Chrome extension",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch"
+  },
+  "keywords": ["chrome-extension", "hackernews", "theme"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chrome": "^0.1.30",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.2"
+  }
+}
