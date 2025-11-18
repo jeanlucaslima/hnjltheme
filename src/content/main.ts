@@ -17,6 +17,8 @@ const themes = {
     '--link-color': '#9facbe',
     '--pagetop-background-color': '#2d3848',
     '--pagetop-text-color': '#9facbe',
+    '--pagetop-user-info-color': '#c8d2dc',
+    '--pagetop-karma-color': '#ededed',
     '--hnname-color': '#bb86fc',
     '--title-link-color': '#ededed',
     '--title-link-visited-color': '#7fe0d4',
@@ -34,6 +36,8 @@ const themes = {
     '--link-color': '#828282',
     '--pagetop-background-color': '#1f1f1f',
     '--pagetop-text-color': '#828282',
+    '--pagetop-user-info-color': '#e0e0e0',
+    '--pagetop-karma-color': '#ffffff',
     '--hnname-color': '#bb86fc',
     '--title-link-color': '#ededed',
     '--title-link-visited-color': '#868686',
@@ -179,6 +183,24 @@ function generateCSS(themeName: ThemeName): string {
     .menu a.active {
       color: var(--active-link-color) !important;
       font-weight: bold !important;
+    }
+
+    /* User info in top-right corner */
+    .pagetop .user-info {
+      float: right;
+      margin-left: 15px;
+      color: var(--pagetop-user-info-color) !important;
+    }
+
+    .pagetop .user-info a {
+      color: var(--pagetop-user-info-color) !important;
+    }
+
+    /* Karma score with high contrast */
+    .pagetop .karma-score {
+      color: var(--pagetop-karma-color) !important;
+      font-weight: 500;
+      padding: 0 3px;
     }
 
     /* Theme switcher styling */
@@ -342,9 +364,25 @@ function modifyNav(): void {
     return;
   }
 
-  // Extract user ID from existing threads link before clearing
-  const userLink = pagetop.querySelector<HTMLAnchorElement>('a[href^="threads?id="]');
-  const userId = userLink?.href.split('=')[1] ?? '';
+  // Extract user info before clearing
+  const userLink = pagetop.querySelector<HTMLAnchorElement>('a[href^="user?id="]');
+  const logoutLink = pagetop.querySelector<HTMLAnchorElement>('a[href^="logout"]');
+  const threadsLink = pagetop.querySelector<HTMLAnchorElement>('a[href^="threads?id="]');
+
+  const username = userLink?.textContent || '';
+  const userId = threadsLink?.href.split('=')[1] ?? '';
+
+  // Extract karma score (text node between user and logout links)
+  let karmaText = '';
+  if (userLink && logoutLink) {
+    let node = userLink.nextSibling;
+    while (node && node !== logoutLink) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        karmaText += node.textContent;
+      }
+      node = node.nextSibling;
+    }
+  }
 
   // Clear existing content
   pagetop.innerHTML = '';
@@ -352,8 +390,35 @@ function modifyNav(): void {
   // Add menu class
   pagetop.classList.add('menu');
 
-  // Build new menu
+  // Build navigation menu
   buildMenu(pagetop, userId);
+
+  // Re-add user info on the right
+  if (username) {
+    const userInfo = document.createElement('span');
+    userInfo.className = 'user-info';
+
+    const userLinkNew = document.createElement('a');
+    userLinkNew.href = `/user?id=${username}`;
+    userLinkNew.textContent = username;
+    userInfo.appendChild(userLinkNew);
+
+    if (karmaText.trim()) {
+      const karma = document.createElement('span');
+      karma.className = 'karma-score';
+      karma.textContent = karmaText.trim();
+      userInfo.appendChild(karma);
+    }
+
+    userInfo.appendChild(document.createTextNode(' | '));
+
+    const logoutLinkNew = document.createElement('a');
+    logoutLinkNew.href = '/logout';
+    logoutLinkNew.textContent = 'logout';
+    userInfo.appendChild(logoutLinkNew);
+
+    pagetop.appendChild(userInfo);
+  }
 
   console.log('HN Skin: Navigation menu modified');
 }
