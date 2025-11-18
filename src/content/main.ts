@@ -123,6 +123,19 @@ function generateCSS(themeName: ThemeName): string {
       background-color: var(--background-color) !important;
     }
 
+    /* Override all inline bgcolor attributes within hnmain */
+    #hnmain td[bgcolor],
+    #hnmain tr[bgcolor],
+    #hnmain table[bgcolor] {
+      background-color: var(--background-color) !important;
+    }
+
+    /* Header table should use pagetop background */
+    #hnmain > tbody > tr:nth-child(2) > td,
+    #hnmain > tbody > tr:nth-child(2) td[bgcolor] {
+      background-color: var(--pagetop-background-color) !important;
+    }
+
     /* Remove all backgrounds from story list rows and cells */
     .athing,
     .athing td,
