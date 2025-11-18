@@ -91,9 +91,14 @@ function generateCSS(themeName: ThemeName): string {
 
     .pagetop {
       background-color: var(--pagetop-background-color) !important;
+      color: var(--pagetop-text-color) !important;
     }
 
     .pagetop a {
+      color: var(--pagetop-text-color) !important;
+    }
+
+    .pagetop * {
       color: var(--pagetop-text-color) !important;
     }
 
