@@ -434,7 +434,8 @@ function addThemeSwitcher(): void {
   const bottomContainer = document.querySelector('.yclinks');
 
   if (!bottomContainer) {
-    console.warn('HN Skin: Could not find .yclinks element');
+    // Silently skip - not all HN pages have footer (.yclinks)
+    // Reply pages, some utility pages don't have this element
     return;
   }
 
