@@ -117,10 +117,12 @@ function generateCSS(themeName: ThemeName): string {
       background-color: var(--table-background-color) !important;
     }
 
-    /* Override: itemlist table should be transparent to prevent stripes */
+    /* Override: itemlist table should match page background to prevent stripes */
     .itemlist,
-    table.itemlist {
-      background-color: transparent !important;
+    table.itemlist,
+    .itemlist table,
+    .itemlist > tbody > tr > td > table {
+      background-color: var(--background-color) !important;
     }
 
     /* Remove all backgrounds from story list rows and cells */
