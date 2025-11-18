@@ -144,6 +144,14 @@ function generateCSS(themeName: ThemeName): string {
       background-color: transparent !important;
     }
 
+    /* Target ALL rows in the story list area (including subtext rows) */
+    #bigbox table tr,
+    #bigbox table tr td,
+    #bigbox table tbody,
+    #bigbox table {
+      background-color: transparent !important;
+    }
+
     .c00, .c00 a {
       color: var(--c00-color) !important;
     }
