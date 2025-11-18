@@ -1,6 +1,6 @@
 {
   "name": "hnjltheme",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Hacker News custom skin Chrome extension",
   "type": "module",
   "scripts": {

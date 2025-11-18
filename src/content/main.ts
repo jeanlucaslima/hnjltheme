@@ -117,19 +117,17 @@ function generateCSS(themeName: ThemeName): string {
       background-color: var(--table-background-color) !important;
     }
 
-    /* Override: itemlist table should match page background to prevent stripes */
-    .itemlist,
-    table.itemlist,
-    .itemlist table,
-    .itemlist > tbody > tr > td > table {
+    /* Override: main HN table should match page background to prevent stripes */
+    #hnmain,
+    table#hnmain {
       background-color: var(--background-color) !important;
     }
 
     /* Remove all backgrounds from story list rows and cells */
-    .itemlist tr,
-    .itemlist tr td,
-    .itemlist .spacer,
-    tr.spacer {
+    .athing,
+    .athing td,
+    tr.spacer,
+    tr.spacer td {
       background-color: transparent !important;
     }
 
