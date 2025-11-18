@@ -125,6 +125,56 @@ function generateCSS(themeName: ThemeName): string {
       color: var(--c00-color) !important;
     }
 
+    /* Remove unwanted borders and outlines from all tables */
+    table, tr, td, th {
+      border: none !important;
+      outline: none !important;
+      border-collapse: collapse !important;
+      border-spacing: 0 !important;
+    }
+
+    /* Comment block styling - remove all visual cruft */
+    .comtr,
+    .athing.comtr,
+    tr[id^="tr_"] {
+      border: none !important;
+      outline: none !important;
+      background-color: transparent !important;
+    }
+
+    .comment {
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      background-color: transparent !important;
+    }
+
+    /* Comment table cells */
+    .comment td {
+      border: none !important;
+      padding: 0 !important;
+    }
+
+    /* Indentation spacers */
+    .ind img {
+      border: none !important;
+      outline: none !important;
+    }
+
+    /* Comment text */
+    .commtext {
+      color: var(--text-color) !important;
+      background: transparent !important;
+    }
+
+    /* Code blocks in comments */
+    .commtext pre {
+      background-color: rgba(0, 0, 0, 0.3) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      padding: 8px !important;
+      border-radius: 4px !important;
+    }
+
     /* Active link highlighting in menu */
     .menu a.active {
       color: var(--active-link-color) !important;
