@@ -1,252 +1,290 @@
 /**
  * HN Custom Skin - Content Script
  * Injects custom CSS and UI elements into Hacker News
+ * Ported from userscript
  */
 
+// ============================================================================
+// THEME DEFINITIONS (Ported from userscript)
+// ============================================================================
+
+const themes = {
+  darkNavy: {
+    dark: true,
+    '--background-color': '#1a202c',
+    '--table-background-color': '#2d3848',
+    '--text-color': '#dddddd',
+    '--link-color': '#9facbe',
+    '--pagetop-background-color': '#2d3848',
+    '--pagetop-text-color': '#9facbe',
+    '--hnname-color': '#bb86fc',
+    '--title-link-color': '#ededed',
+    '--title-link-visited-color': '#7fe0d4',
+    '--subtext-link-color': '#c8d2dc',
+    '--itemlist-even-bg-color': '#1c1c1c',
+    '--itemlist-odd-bg-color': '#121212',
+    '--c00-color': '#c8d2dc',
+    '--active-link-color': '#ff4500',
+  },
+  blackTheme: {
+    dark: true,
+    '--background-color': '#1f1f1f',
+    '--table-background-color': '#1f1f1f',
+    '--text-color': '#e0e0e0',
+    '--link-color': '#828282',
+    '--pagetop-background-color': '#1f1f1f',
+    '--pagetop-text-color': '#828282',
+    '--hnname-color': '#bb86fc',
+    '--title-link-color': '#ededed',
+    '--title-link-visited-color': '#868686',
+    '--subtext-link-color': '#03dac6',
+    '--itemlist-even-bg-color': '#1c1c1c',
+    '--itemlist-odd-bg-color': '#121212',
+    '--c00-color': '#ededed',
+    '--active-link-color': '#ff6600',
+  },
+} as const;
+
+type ThemeName = keyof typeof themes;
+
 /** Current theme state */
-let currentTheme: 'light' | 'dark' = 'light';
+let currentTheme: ThemeName = 'darkNavy';
 
 /** Reference to the injected theme style element */
 let themeStyleElement: HTMLStyleElement | null = null;
 
-/**
- * Light theme CSS - slightly enhanced HN appearance
- */
-const lightThemeCss = `
-  /* Light theme: Enhanced HN appearance */
-  body {
-    background-color: #f6f6ef !important;
-    font-size: 11pt !important;
-    color: #000 !important;
-  }
-
-  /* Larger, more prominent titles */
-  .titleline > a {
-    font-size: 13pt !important;
-    font-weight: 500 !important;
-    color: #000 !important;
-  }
-
-  /* Subtle background change */
-  #hnmain {
-    background-color: #fafaf5 !important;
-  }
-
-  /* Style for our custom menu */
-  .hn-skin-menu {
-    display: inline-block;
-    margin-left: 10px;
-    padding: 2px 8px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white !important;
-    font-size: 9pt;
-    border-radius: 10px;
-    font-weight: 500;
-  }
-
-  .hn-skin-menu a {
-    color: white !important;
-    text-decoration: none !important;
-    margin: 0 4px;
-  }
-
-  .hn-skin-menu a:hover {
-    text-decoration: underline !important;
-  }
-
-  .hn-skin-menu .separator {
-    margin: 0 4px;
-    opacity: 0.7;
-  }
-
-  .hn-skin-menu .toggle-btn {
-    cursor: pointer;
-    padding: 0 4px;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-  }
-
-  .hn-skin-menu .toggle-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-`;
+// ============================================================================
+// CSS GENERATION (Ported from userscript)
+// ============================================================================
 
 /**
- * Dark theme CSS - dark mode for HN
+ * Generates CSS from theme object using CSS variables
+ * @param themeName - The theme to generate CSS for
+ * @returns Complete CSS string with all rules
  */
-const darkThemeCss = `
-  /* Dark theme: Dark mode for Hacker News */
-  body {
-    background-color: #0f172a !important;
-    font-size: 11pt !important;
-    color: #e5e7eb !important;
-  }
+function generateCSS(themeName: ThemeName): string {
+  const theme = themes[themeName];
 
-  /* Main container */
-  #hnmain {
-    background-color: #1e293b !important;
-  }
+  // Set color scheme for dark themes
+  const colorScheme = theme.dark ? 'color-scheme: dark;' : '';
 
-  /* Tables and containers */
-  table {
-    background-color: #1e293b !important;
-  }
+  return `
+    /* Theme: ${themeName} - Generated CSS with variables */
 
-  td {
-    background-color: transparent !important;
-  }
+    :root {
+      ${colorScheme}
+      ${Object.entries(theme).filter(([key]) => key.startsWith('--')).map(([key, value]) => `${key}: ${value};`).join('\n      ')}
+    }
 
-  /* Story titles */
-  .titleline > a {
-    font-size: 13pt !important;
-    font-weight: 500 !important;
-    color: #f1f5f9 !important;
-  }
+    body, tbody {
+      background-color: var(--background-color) !important;
+      color: var(--text-color) !important;
+    }
 
-  /* Links */
-  a {
-    color: #93c5fd !important;
-  }
+    a {
+      color: var(--link-color) !important;
+    }
 
-  a:visited {
-    color: #c4b5fd !important;
-  }
+    .pagetop {
+      background-color: var(--pagetop-background-color) !important;
+    }
 
-  /* Top bar */
-  .pagetop {
-    background-color: #ff6600 !important;
-  }
+    .pagetop a {
+      color: var(--pagetop-text-color) !important;
+    }
 
-  .pagetop a {
-    color: #000 !important;
-  }
+    .hnname a {
+      color: var(--hnname-color) !important;
+    }
 
-  /* Comment text */
-  .comment {
-    color: #e5e7eb !important;
-  }
+    td.title .titleline > a {
+      color: var(--title-link-color) !important;
+    }
 
-  .comment a {
-    color: #93c5fd !important;
-  }
+    td.title .titleline > a:visited {
+      color: var(--title-link-visited-color) !important;
+    }
 
-  /* Subtext (metadata) */
-  .subtext {
-    color: #94a3b8 !important;
-  }
+    .subtext, .subtext a {
+      color: var(--subtext-link-color) !important;
+    }
 
-  .subtext a {
-    color: #94a3b8 !important;
-  }
+    table {
+      background-color: var(--table-background-color) !important;
+    }
 
-  /* Reply links and controls */
-  .reply a, .togg {
-    color: #94a3b8 !important;
-  }
+    .itemlist tr:nth-child(even) {
+      background-color: var(--itemlist-even-bg-color) !important;
+    }
 
-  /* Input fields */
-  input[type="text"], input[type="password"], textarea {
-    background-color: #334155 !important;
-    color: #e5e7eb !important;
-    border: 1px solid #475569 !important;
-  }
+    .itemlist tr:nth-child(odd) {
+      background-color: var(--itemlist-odd-bg-color) !important;
+    }
 
-  /* Code blocks */
-  pre {
-    background-color: #334155 !important;
-    color: #e5e7eb !important;
-  }
+    .c00, .c00 a {
+      color: var(--c00-color) !important;
+    }
 
-  /* Style for our custom menu */
-  .hn-skin-menu {
-    display: inline-block;
-    margin-left: 10px;
-    padding: 2px 8px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white !important;
-    font-size: 9pt;
-    border-radius: 10px;
-    font-weight: 500;
-  }
+    /* Active link highlighting in menu */
+    .menu a.active {
+      color: var(--active-link-color) !important;
+      font-weight: bold !important;
+    }
 
-  .hn-skin-menu a {
-    color: white !important;
-    text-decoration: none !important;
-    margin: 0 4px;
-  }
+    /* Theme switcher styling */
+    .theme_switcher {
+      display: block;
+      margin-top: 10px;
+      color: var(--text-color) !important;
+    }
 
-  .hn-skin-menu a:hover {
-    text-decoration: underline !important;
-  }
+    .theme_switcher select {
+      margin-left: 5px;
+      background-color: var(--table-background-color) !important;
+      color: var(--text-color) !important;
+      border: 1px solid var(--link-color) !important;
+      padding: 2px 4px;
+    }
+  `;
+}
 
-  .hn-skin-menu .separator {
-    margin: 0 4px;
-    opacity: 0.7;
-  }
-
-  .hn-skin-menu .toggle-btn {
-    cursor: pointer;
-    padding: 0 4px;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-  }
-
-  .hn-skin-menu .toggle-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-`;
+// ============================================================================
+// THEME APPLICATION & STORAGE
+// ============================================================================
 
 /**
  * Applies the selected theme to the page
- * @param theme - 'light' or 'dark'
+ * @param themeName - Theme name to apply
  */
-function applyTheme(theme: 'light' | 'dark'): void {
+function applyTheme(themeName: ThemeName): void {
+  // Validate theme name
+  if (!themes[themeName]) {
+    console.warn(`HN Skin: Invalid theme "${themeName}", defaulting to darkNavy`);
+    themeName = 'darkNavy';
+  }
+
   // Remove existing theme style if present
   if (themeStyleElement) {
     themeStyleElement.remove();
   }
 
-  // Create new style element
+  // Create new style element with generated CSS
   themeStyleElement = document.createElement('style');
-  themeStyleElement.textContent = theme === 'dark' ? darkThemeCss : lightThemeCss;
-  themeStyleElement.setAttribute('data-hn-skin-theme', theme);
+  themeStyleElement.textContent = generateCSS(themeName);
+  themeStyleElement.setAttribute('data-hn-skin-theme', themeName);
   document.head.appendChild(themeStyleElement);
 
   // Update current theme
-  currentTheme = theme;
+  currentTheme = themeName;
 
-  // Update toggle button label if menu exists
-  updateToggleLabel();
+  // Update theme switcher if it exists
+  const themeSwitcher = document.querySelector<HTMLSelectElement>('.theme_switcher select');
+  if (themeSwitcher) {
+    themeSwitcher.value = themeName;
+  }
 
   // Persist theme preference to storage
-  chrome.storage.sync.set({ hnSkinTheme: theme }, () => {
-    console.log(`HN Skin: Theme set to ${theme}`);
+  chrome.storage.sync.set({ hnTheme: themeName }, () => {
+    console.log(`HN Skin: Theme set to ${themeName}`);
   });
 }
 
 /**
- * Updates the toggle button label to reflect current theme
+ * Loads the initial theme from storage with fallback to localStorage
+ * @returns Promise resolving to the theme name
  */
-function updateToggleLabel(): void {
-  const toggleBtn = document.querySelector('.hn-skin-toggle');
-  if (toggleBtn) {
-    toggleBtn.textContent = currentTheme === 'light' ? 'Theme: Light ↻' : 'Theme: Dark ↻';
+async function loadInitialTheme(): Promise<ThemeName> {
+  return new Promise((resolve) => {
+    // First try chrome.storage.sync
+    chrome.storage.sync.get(['hnTheme'], (result) => {
+      if (result.hnTheme && themes[result.hnTheme as ThemeName]) {
+        console.log(`HN Skin: Loaded theme from chrome.storage: ${result.hnTheme}`);
+        resolve(result.hnTheme as ThemeName);
+        return;
+      }
+
+      // Fallback to localStorage (old userscript key)
+      try {
+        const oldTheme = localStorage.getItem('hn-theme');
+        if (oldTheme && themes[oldTheme as ThemeName]) {
+          console.log(`HN Skin: Migrating theme from localStorage: ${oldTheme}`);
+          // Migrate to chrome.storage
+          chrome.storage.sync.set({ hnTheme: oldTheme });
+          resolve(oldTheme as ThemeName);
+          return;
+        }
+      } catch (e) {
+        console.warn('HN Skin: Could not access localStorage', e);
+      }
+
+      // Default to darkNavy
+      console.log('HN Skin: No saved theme, defaulting to darkNavy');
+      resolve('darkNavy');
+    });
+  });
+}
+
+// ============================================================================
+// NAVIGATION MENU (Ported from userscript)
+// ============================================================================
+
+/**
+ * Creates a link element with active state detection
+ * @param container - Parent element to append link to
+ * @param text - Link text
+ * @param href - Link URL
+ */
+function createLink(container: HTMLElement, text: string, href: string): void {
+  const link = document.createElement('a');
+  link.href = href;
+  link.textContent = text;
+
+  // Active link detection: compare pathname only
+  try {
+    const linkUrl = new URL(link.href, window.location.origin);
+    if (linkUrl.pathname === window.location.pathname) {
+      link.classList.add('active');
+    }
+  } catch (e) {
+    // Ignore URL parse errors
   }
+
+  // Add separator before link (except for first link)
+  if (container.childNodes.length === 1) {
+    container.appendChild(document.createTextNode(' '));
+  }
+  if (container.childNodes.length > 2) {
+    container.appendChild(document.createTextNode(' | '));
+  }
+
+  container.appendChild(link);
 }
 
 /**
- * Toggles between light and dark themes
+ * Builds the navigation menu with all links
+ * @param container - Parent element to build menu in
+ * @param userId - HN user ID for threads link
  */
-function toggleTheme(): void {
-  const nextTheme = currentTheme === 'light' ? 'dark' : 'light';
-  applyTheme(nextTheme);
+function buildMenu(container: HTMLElement, userId: string): void {
+  createLink(container, 'Hacker News', '/');
+  createLink(container, 'active', '/active');
+  createLink(container, 'best', '/best');
+
+  // Only add threads link if we have a user ID
+  if (userId) {
+    createLink(container, 'threads', `/threads?id=${userId}`);
+  }
+
+  createLink(container, 'ask', '/ask');
+  createLink(container, 'show', '/show');
+  createLink(container, 'past', '/front');
+  createLink(container, 'submit', '/submit');
 }
 
 /**
- * Injects a custom menu element into the HN header with /active link and theme toggle
+ * Modifies the top navigation bar (ported from userscript)
  */
-function injectMenu(): void {
-  // Find the HN top bar (usually in .pagetop)
+function modifyNav(): void {
   const pagetop = document.querySelector('.pagetop');
 
   if (!pagetop) {
@@ -254,52 +292,97 @@ function injectMenu(): void {
     return;
   }
 
-  // Create our custom menu element
-  const menu = document.createElement('span');
-  menu.className = 'hn-skin-menu';
+  // Extract user ID from existing threads link before clearing
+  const userLink = pagetop.querySelector<HTMLAnchorElement>('a[href^="threads?id="]');
+  const userId = userLink?.href.split('=')[1] ?? '';
 
-  // Build menu content: [HN Skin] | [Active] | [Theme toggle]
-  menu.innerHTML = `
-    <span>HN Skin</span>
-    <span class="separator">|</span>
-    <a href="/active">Active</a>
-    <span class="separator">|</span>
-    <span class="toggle-btn hn-skin-toggle">${currentTheme === 'light' ? 'Theme: Light ↻' : 'Theme: Dark ↻'}</span>
-  `;
+  // Clear existing content
+  pagetop.innerHTML = '';
 
-  // Add click handler for theme toggle
-  const toggleBtn = menu.querySelector('.toggle-btn');
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      toggleTheme();
-    });
+  // Add menu class
+  pagetop.classList.add('menu');
+
+  // Build new menu
+  buildMenu(pagetop, userId);
+
+  console.log('HN Skin: Navigation menu modified');
+}
+
+// ============================================================================
+// THEME SWITCHER (Ported from userscript)
+// ============================================================================
+
+/**
+ * Adds theme switcher dropdown at the bottom of the page
+ */
+function addThemeSwitcher(): void {
+  const bottomContainer = document.querySelector('.yclinks');
+
+  if (!bottomContainer) {
+    console.warn('HN Skin: Could not find .yclinks element');
+    return;
   }
 
-  // Append to the page top
-  pagetop.appendChild(menu);
+  // Create switcher container
+  const switcherSpan = document.createElement('span');
+  switcherSpan.className = 'theme_switcher';
+  switcherSpan.style.display = 'block';
+  switcherSpan.style.marginTop = '10px';
 
-  console.log('HN Skin: Menu injected successfully');
+  // Create select element
+  const select = document.createElement('select');
+  select.innerHTML = `
+    <option value="darkNavy">Deep Navy</option>
+    <option value="blackTheme">Black</option>
+  `;
+
+  // Set current theme as selected
+  select.value = currentTheme;
+
+  // Add change listener
+  select.addEventListener('change', () => {
+    const selectedTheme = select.value as ThemeName;
+    applyTheme(selectedTheme);
+  });
+
+  // Build switcher UI
+  switcherSpan.appendChild(document.createTextNode('Theme: '));
+  switcherSpan.appendChild(select);
+
+  // Append to bottom
+  bottomContainer.appendChild(switcherSpan);
+
+  console.log('HN Skin: Theme switcher added');
 }
+
+// ============================================================================
+// INITIALIZATION
+// ============================================================================
 
 /**
  * Initialize the extension when DOM is ready
  */
-function initialize(): void {
+async function initialize(): Promise<void> {
   console.log('HN Skin: Content script loaded');
 
-  // Load saved theme from storage (default to 'light')
-  chrome.storage.sync.get(['hnSkinTheme'], (result) => {
-    const savedTheme = (result.hnSkinTheme as 'light' | 'dark') || 'light';
-    currentTheme = savedTheme;
+  try {
+    // 1. Load initial theme from storage/localStorage
+    const initialTheme = await loadInitialTheme();
 
-    // Apply the saved/default theme
-    applyTheme(currentTheme);
-    console.log(`HN Skin: Applied ${currentTheme} theme`);
+    // 2. Apply the theme
+    applyTheme(initialTheme);
+    console.log(`HN Skin: Applied ${initialTheme} theme`);
 
-    // Inject custom menu (after theme is set so toggle shows correct state)
-    injectMenu();
-  });
+    // 3. Modify navigation menu
+    modifyNav();
+
+    // 4. Add theme switcher at bottom
+    addThemeSwitcher();
+
+    console.log('HN Skin: Initialization complete');
+  } catch (error) {
+    console.error('HN Skin: Initialization error', error);
+  }
 }
 
 // Wait for DOM to be ready before initializing
