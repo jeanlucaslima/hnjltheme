@@ -160,3 +160,4 @@ Use `chrome.storage.local` for:
 
 The build process uses Vite's esbuild-based TypeScript compilation (faster than tsc).
 - always bump version for minor tweaks
+- after bumping version when finishing a task also git commit
