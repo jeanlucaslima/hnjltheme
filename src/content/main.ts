@@ -238,6 +238,18 @@ function generateCSS(themeName: ThemeName): string {
       padding: 0 3px;
     }
 
+    /* Poll options - override inline font color attribute */
+    td.comment font[color],
+    td.comment font {
+      color: var(--text-color) !important;
+    }
+
+    /* Poll option scores */
+    td.default .comhead,
+    td.default .score {
+      color: var(--subtext-link-color) !important;
+    }
+
     /* Theme switcher styling */
     .theme_switcher {
       display: block;
