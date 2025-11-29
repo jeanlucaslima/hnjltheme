@@ -492,7 +492,6 @@ function generateCSS(themeName: ThemeName): string {
 function applyTheme(themeName: ThemeName): void {
   // Validate theme name
   if (!themes[themeName]) {
-    console.warn(`HN Skin: Invalid theme "${themeName}", defaulting to darkNavy`);
     themeName = 'darkNavy';
   }
 
@@ -517,9 +516,7 @@ function applyTheme(themeName: ThemeName): void {
   }
 
   // Persist theme preference to storage
-  chrome.storage.sync.set({ hnTheme: themeName }, () => {
-    console.log(`HN Skin: Theme set to ${themeName}`);
-  });
+  chrome.storage.sync.set({ hnTheme: themeName });
 }
 
 /**
@@ -531,7 +528,6 @@ async function loadInitialTheme(): Promise<ThemeName> {
     // First try chrome.storage.sync
     chrome.storage.sync.get(['hnTheme'], (result) => {
       if (result.hnTheme && themes[result.hnTheme as ThemeName]) {
-        console.log(`HN Skin: Loaded theme from chrome.storage: ${result.hnTheme}`);
         resolve(result.hnTheme as ThemeName);
         return;
       }
@@ -540,18 +536,16 @@ async function loadInitialTheme(): Promise<ThemeName> {
       try {
         const oldTheme = localStorage.getItem('hn-theme');
         if (oldTheme && themes[oldTheme as ThemeName]) {
-          console.log(`HN Skin: Migrating theme from localStorage: ${oldTheme}`);
           // Migrate to chrome.storage
           chrome.storage.sync.set({ hnTheme: oldTheme });
           resolve(oldTheme as ThemeName);
           return;
         }
-      } catch (e) {
-        console.warn('HN Skin: Could not access localStorage', e);
+      } catch {
+        // Ignore localStorage errors
       }
 
       // Default to darkNavy
-      console.log('HN Skin: No saved theme, defaulting to darkNavy');
       resolve('darkNavy');
     });
   });
@@ -621,7 +615,6 @@ function modifyNav(): void {
   const pagetop = document.querySelector('.pagetop');
 
   if (!pagetop) {
-    console.warn('HN Skin: Could not find .pagetop element');
     return;
   }
 
@@ -680,8 +673,6 @@ function modifyNav(): void {
 
     pagetop.appendChild(userInfo);
   }
-
-  console.log('HN Skin: Navigation menu modified');
 }
 
 // ============================================================================
@@ -728,8 +719,6 @@ function addThemeSwitcher(): void {
 
   // Append to bottom
   bottomContainer.appendChild(switcherSpan);
-
-  console.log('HN Skin: Theme switcher added');
 }
 
 // ============================================================================
@@ -816,8 +805,7 @@ function parseProfileHTML(html: string, username: string): UserProfileData | nul
       submissionsUrl: `/submitted?id=${username}`,
       commentsUrl: `/threads?id=${username}`,
     };
-  } catch (error) {
-    console.error(`HN Skin: Error parsing profile HTML for ${username}`, error);
+  } catch {
     return null;
   }
 }
@@ -837,20 +825,12 @@ async function fetchUserProfile(username: string): Promise<UserProfileData | nul
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      if (response.status === 404) {
-        console.warn(`HN Skin: User "${username}" not found`);
-      }
       return null;
     }
 
     const html = await response.text();
     return parseProfileHTML(html, username);
-  } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      console.warn(`HN Skin: Timeout fetching profile for ${username}`);
-    } else {
-      console.error(`HN Skin: Failed to fetch profile for ${username}`, error);
-    }
+  } catch {
     return null;
   }
 }
@@ -1195,8 +1175,6 @@ function initUserPopup(): void {
   const popup = getOrCreatePopup();
   popup.addEventListener('mouseenter', handlePopupMouseEnter);
   popup.addEventListener('mouseleave', handlePopupMouseLeave);
-
-  console.log('HN Skin: User popup initialized');
 }
 
 // ============================================================================
@@ -1207,15 +1185,12 @@ function initUserPopup(): void {
  * Initialize the extension when DOM is ready
  */
 async function initialize(): Promise<void> {
-  console.log('HN Skin: Content script loaded');
-
   try {
     // 1. Load initial theme from storage/localStorage
     const initialTheme = await loadInitialTheme();
 
     // 2. Apply the theme
     applyTheme(initialTheme);
-    console.log(`HN Skin: Applied ${initialTheme} theme`);
 
     // 3. Modify navigation menu
     modifyNav();
@@ -1225,10 +1200,8 @@ async function initialize(): Promise<void> {
 
     // 5. Initialize user profile popup
     initUserPopup();
-
-    console.log('HN Skin: Initialization complete');
-  } catch (error) {
-    console.error('HN Skin: Initialization error', error);
+  } catch {
+    // Initialization failed silently
   }
 }
 
