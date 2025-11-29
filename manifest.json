@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "HN Custom Skin",
   "description": "Customize Hacker News look and feel",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "permissions": [
     "storage"
   ],

@@ -27,6 +27,8 @@ const themes = {
     '--itemlist-odd-bg-color': '#3b4252',
     '--c00-color': '#eceff4',
     '--active-link-color': '#d08770',
+    '--selection-bg-color': 'rgba(191, 97, 106, 0.5)',
+    '--selection-text-color': '#eceff4',
   },
   blackTheme: {
     dark: true,
@@ -46,6 +48,8 @@ const themes = {
     '--itemlist-odd-bg-color': '#121212',
     '--c00-color': '#ededed',
     '--active-link-color': '#ff6600',
+    '--selection-bg-color': 'rgba(255, 102, 0, 0.4)',
+    '--selection-text-color': '#ffffff',
   },
 } as const;
 
@@ -248,6 +252,17 @@ function generateCSS(themeName: ThemeName): string {
     td.default .comhead,
     td.default .score {
       color: var(--subtext-link-color) !important;
+    }
+
+    /* Text selection */
+    ::selection {
+      background-color: var(--selection-bg-color) !important;
+      color: var(--selection-text-color) !important;
+    }
+
+    ::-moz-selection {
+      background-color: var(--selection-bg-color) !important;
+      color: var(--selection-text-color) !important;
     }
 
     /* Theme switcher styling */
